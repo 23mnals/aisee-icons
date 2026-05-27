@@ -1,0 +1,37 @@
+name: Build Icons
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/icons/**'   # 只有你放新 SVG 才触发，其他改动不触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允许 Actions 把构建结果推回仓库
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build icons
+        run: npm run build
+
+      - name: Commit dist
+        run: |
+          git config --global user.name "aisee-icons-bot"
+          git config --global user.email "bot@aisee.com"
+          git add dist/ src/index.ts src/components/
+          git diff --staged --quiet || git commit -m "🤖 auto build: $(date '+%Y-%m-%d %H:%M')"
+          git push
